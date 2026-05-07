@@ -11,10 +11,13 @@ function hideWaiting(){
   resultOverlay.classList.add('hidden');
 }
 
+function showResult(text) {
   resultOverlay.innerHTML = `<h2>${text}</h2>`;
+  resultOverlay.classList.remove('hidden');
   resultOverlay.classList.add('show');
   setTimeout(() => resultOverlay.classList.remove('show'), 2500);
 }
+
 
 const playerInfo = document.getElementById('player-info');
 const turnInfo   = document.getElementById('turn-info');
