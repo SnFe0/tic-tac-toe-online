@@ -30,7 +30,7 @@
   opacity: 1;
   visibility: visible;
 }
-.overlay h2 {
+.overlay.hidden{opacity:0;visibility:hidden;}.overlay h2 {
   color: #fff;
   font-size: 2rem;
   text-shadow: 0 0 12px var(--c-cyan);

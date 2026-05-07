@@ -1,7 +1,16 @@
 // ------------------- Онлайн‑мультиплеер (WebSocket) -------------------
 const cells = document.querySelectorAll('.cell');
 const resultOverlay = document.getElementById('result-overlay');
-function showResult(text) {
+function showWaiting(){
+  resultOverlay.innerHTML = '<h2>Ожидаем соперника...</h2>';
+  resultOverlay.classList.remove('hidden');
+  resultOverlay.classList.add('show');
+}
+function hideWaiting(){
+  resultOverlay.classList.remove('show');
+  resultOverlay.classList.add('hidden');
+}
+
   resultOverlay.innerHTML = `<h2>${text}</h2>`;
   resultOverlay.classList.add('show');
   setTimeout(() => resultOverlay.classList.remove('show'), 2500);
@@ -152,7 +161,12 @@ socket.addEventListener('message', e => {
         restartBtn.style.display = 'inline-block';
     
       break;
-    case 'roomList':
+      case 'wait':
+        showWaiting();
+        break;
+      case 'opponentJoined':
+        hideWaiting();
+        break;
       renderRoomList(data.rooms);
       break;
     case 'error':
