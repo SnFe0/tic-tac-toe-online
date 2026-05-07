@@ -33,6 +33,7 @@ let mySymbol = null;          // X или O, получаем от сервер�
 let roomId = null;            // текущая комната
 let board = Array(9).fill('');
 let gameActive = true;
+let hasJoined = false;
 
 const winningCombinations = [
     [0, 1, 2], [3, 4, 5], [6, 7, 8],
@@ -146,9 +147,20 @@ socket.addEventListener('message', e => {
   const data = JSON.parse(e.data);
   switch (data.type) {
     case 'joined':
-      mySymbol = data.symbol;
-      playerInfo.textContent = `Вы ходите ${mySymbol === 'X' ? 'крестиком' : 'ноликом'}`;
-      showGame();
+      if (!hasJoined) {
+        // first time we receive join info
+        hasJoined = true;
+        mySymbol = data.symbol;
+        playerInfo.textContent = `Вы ходите ${mySymbol === 'X' ? 'крестиком' : 'ноликом'}`;
+        showGame();
+      } else {
+        // second join notification – both players now know their symbols
+        mySymbol = data.symbol;
+        const msg = mySymbol === 'X' ? 'Вы ходите крестиком' : 'Вы ходите ноликом';
+        showResult(msg);
+        // ensure game view is visible
+        showGame();
+      }
       break;
     case 'state':
       board = data.board;
