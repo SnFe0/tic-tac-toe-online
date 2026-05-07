@@ -119,3 +119,4 @@ html,body{height:100%;font-family:'Orbitron',sans-serif;background:linear-gradie
 .cell.o{color:var(--c-purple)}
 #restart{margin-top:1rem;background:rgba(255,255,255,0.08);border:2px solid var(--c-pink);color:var(--c-pink);padding:0.6rem 1.2rem;border-radius:8px;cursor:pointer;transition:transform .2s,background .2s,color .2s}
 #restart:hover{background:var(--c-pink);color:#111;transform:scale(1.05);box-shadow:0 0 12px var(--c-pink),0 0 20px var(--c-pink)}
+#restart:hover{background:var(--c-pink);color:#111;transform:scale(1.05);box-shadow:0 0 12px var(--c-pink),0 0 20px var(--c-pink)}

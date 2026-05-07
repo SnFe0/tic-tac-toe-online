@@ -41,7 +41,7 @@ function showGame() {
   restartBtn.style.display = 'none';
   lobbyDiv.style.display = 'none';
   gameDiv.style.display = 'grid';
-  restartBtn.style.display = 'inline-block';
+
 }
 
 // ---------- Modal handling ----------
@@ -141,14 +141,15 @@ socket.addEventListener('message', e => {
     case 'state':
       board = data.board;
       renderBoard();
-      turnInfo.textContent = `Сейчас ходит ${data.turn === 'X' ? 'крестик' : 'нолик'}`;
+        restartBtn.style.display = 'none';
+        turnInfo.textContent = `Сейчас ходит ${data.turn === 'X' ? 'крестик' : 'нолик'}`;
       break;
     case 'end':
       board = data.board;
       renderBoard();
         if (data.winner) showResult(`Победил ${data.winner}!`);
         else if (data.draw) showResult('Ничья');
-        // show restart button now that игра завершена
+        restartBtn.style.display = 'inline-block';
     
       break;
     case 'roomList':
@@ -181,6 +182,8 @@ function handleCellClick(e) {
 
 restartBtn.addEventListener('click', () => {
   socket.send(JSON.stringify({type: 'restart', roomId}));
+  // hide button again until next game ends
+  restartBtn.style.display = 'none';
 });
 
 createBtn.addEventListener('click', () => openModal('create'));
