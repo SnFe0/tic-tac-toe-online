@@ -180,7 +180,23 @@ function attachRoomHandlers(ws, roomId, password) {
 
     // 2. Restart request
     if (data.type === 'restart') {
+      // Reset board and reassign random symbols for a fresh game
       resetRoom(room);
+      // Randomly decide which player gets X
+      const playersArray = Array.from(room.players);
+      if (playersArray.length === 2) {
+        const first = playersArray[0];
+        const second = playersArray[1];
+        const assignXtoFirst = Math.random() < 0.5;
+        first.symbol = assignXtoFirst ? 'X' : 'O';
+        second.symbol = assignXtoFirst ? 'O' : 'X';
+        // Notify both players of their new symbols
+        first.send(JSON.stringify({ type: 'joined', roomId, symbol: first.symbol }));
+        second.send(JSON.stringify({ type: 'joined', roomId, symbol: second.symbol }));
+        // Inform both that opponent is present
+        broadcast(room, { type: 'opponentJoined' });
+      }
+      // Send updated state (empty board, turn X)
       broadcast(room, { type: 'state', board: room.board, turn: room.turn });
     }
 
