@@ -116,8 +116,16 @@ html,body{height:100%;font-family:'Orbitron',sans-serif;background:linear-gradie
 /* Increased symbol size and added appearance animation */
 .cell{width:100%;aspect-ratio:1;background:var(--glass-bg);border:2px solid rgba(255,255,255,0.12);font-size:5rem;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s;overflow:hidden;}
 .cell:hover{background:rgba(0,255,255,0.1)}
-.cell.x{color:var(--c-pink);animation: symbolAppear .3s ease forwards;}
-.cell.o{color:var(--c-purple);animation: symbolAppear .3s ease forwards;}
+.cell.x{
+  color:var(--c-pink);
+  text-shadow: 0 0 8px var(--c-pink), 0 0 12px var(--c-pink);
+  animation: symbolAppear .3s ease forwards;
+}
+.cell.o{
+  color:var(--c-purple);
+  text-shadow: 0 0 8px var(--c-purple), 0 0 12px var(--c-purple);
+  animation: symbolAppear .3s ease forwards;
+}
 @keyframes symbolAppear {from{opacity:0;transform:scale(0.5);}to{opacity:1;transform:scale(1);}}
 #restart{margin-top:1rem;background:rgba(255,255,255,0.08);border:2px solid var(--c-pink);color:var(--c-pink);padding:0.6rem 1.2rem;border-radius:8px;cursor:pointer;transition:transform .2s,background .2s,color .2s}
 #restart:hover{background:var(--c-pink);color:#111;transform:scale(1.05);box-shadow:0 0 12px var(--c-pink),0 0 20px var(--c-pink)}
