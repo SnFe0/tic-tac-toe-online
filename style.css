@@ -1,0 +1,121 @@
+.modal {
+  display:none; /* hidden by default */
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background: rgba(0,0,0,0.72);
+  backdrop-filter: blur(8px);
+  justify-content: center;
+  align-items: center;
+}
+.modal.show { display:flex; }
+.overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.72);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .3s ease;
+  z-index: 2000;
+}
+.overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+.overlay h2 {
+  color: #fff;
+  font-size: 2rem;
+  text-shadow: 0 0 12px var(--c-cyan);
+}
+
+/* Glassmorphism modal content */
+.modal-content {
+  background: rgba(10,14,30,0.72);
+  backdrop-filter: blur(18px);
+  padding: 2rem;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 420px;
+  border: 1px solid rgba(0,255,255,0.45);
+  box-shadow: 0 0 25px rgba(0,255,255,0.18), inset 0 0 12px rgba(255,255,255,0.04);
+  color: #fff;
+  animation: modalAppear .25s ease;
+}
+
+@keyframes modalAppear {
+  from { opacity:0; transform: translateY(10px) scale(.97); }
+  to   { opacity:1; transform: translateY(0) scale(1); }
+}
+
+/* Title inside modal */
+.modal-content h2 {
+  text-align: center;
+  margin-bottom: 1.4rem;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(0,255,255,0.5);
+}
+
+/* Input styling */
+.modal-content input {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  margin-top: 0.8rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  color: #fff;
+  font-family: inherit;
+  outline: none;
+  transition: border .2s, box-shadow .2s, background .2s;
+}
+.modal-content input:focus {
+  border-color: var(--c-cyan);
+  box-shadow: 0 0 10px rgba(0,255,255,0.4);
+  background: rgba(255,255,255,0.08);
+}
+
+/* Buttons layout */
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+/* Keep rest of stylesheet */
+:root {
+    --bg-dark-1: #050814;
+    --bg-dark-2: #070a1a;
+    --c-cyan:   #00ffff;
+    --c-purple: #a855f7;
+    --c-pink:   #ff4ecd;
+    --glass-bg: rgba(15,15,30,0.45);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Orbitron',sans-serif;background:linear-gradient(135deg,var(--bg-dark-1),var(--bg-dark-2));color:#fff;display:flex;align-items:center;justify-content:center;overflow:visible}
+ .wrapper{max-width:540px;width:90%;text-align:center}
+.title{font-size:2.6rem;margin:0 auto 2rem;display:block;width:100%;text-align:center;text-shadow:0 0 8px var(--c-cyan),0 0 12px var(--c-cyan);animation:pulse 3s infinite ease-in-out;overflow:visible;white-space:normal;transform:translateX(-18px)}
+@keyframes pulse{0%{text-shadow:0 0 8px var(--c-cyan),0 0 12px var(--c-cyan)}50%{text-shadow:0 0 12px var(--c-cyan),0 0 18px var(--c-cyan)}100%{text-shadow:0 0 8px var(--c-cyan),0 0 12px var(--c-cyan)}}
+.lobby-card{background:var(--glass-bg);border-radius:16px;padding:1.5rem;margin-bottom:2rem;backdrop-filter:blur(12px);border:2px solid rgba(255,255,255,0.12);box-shadow:0 0 15px rgba(0,255,255,0.2),inset 0 0 8px rgba(0,255,255,0.2)}
+.neon-btn{font-family:inherit;font-size:1rem;padding:0.6rem 1.2rem;margin-bottom:1rem;background:rgba(255,255,255,0.08);color:var(--c-cyan);border:2px solid var(--c-cyan);border-radius:8px;cursor:pointer;transition:transform .2s,box-shadow .2s,background .2s;text-shadow:0 0 6px var(--c-cyan)}
+.neon-btn:hover{background:var(--c-cyan);color:#111;transform:scale(1.05);box-shadow:0 0 12px var(--c-cyan),0 0 20px var(--c-cyan)}
+.room-list{list-style:none;padding:0;margin-top:0.8rem}
+.room-list li{background:var(--glass-bg);border-radius:12px;padding:0.7rem 1rem;margin:0.6rem 0;display:flex;justify-content:space-between;align-items:center;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.1)}
+.room-list button{background:none;color:var(--c-purple);border:none;cursor:pointer;font-size:0.9rem;transition:color .2s}
+.room-list button:hover{color:var(--c-pink)}
+#player-info,#turn-info{margin:0.5rem 0;color:var(--c-cyan)}
+#game{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;max-width:320px;margin:0 auto}
+.cell{width:100%;aspect-ratio:1;background:var(--glass-bg);border:2px solid rgba(255,255,255,0.12);font-size:2rem;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s}
+.cell:hover{background:rgba(0,255,255,0.1)}
+.cell.x{color:var(--c-pink)}
+.cell.o{color:var(--c-purple)}
+#restart{margin-top:1rem;background:rgba(255,255,255,0.08);border:2px solid var(--c-pink);color:var(--c-pink);padding:0.6rem 1.2rem;border-radius:8px;cursor:pointer;transition:transform .2s,background .2s,color .2s}
+#restart:hover{background:var(--c-pink);color:#111;transform:scale(1.05);box-shadow:0 0 12px var(--c-pink),0 0 20px var(--c-pink)}

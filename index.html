@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Крестики‑нолики</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Header -->
+        <h1 class="title">Крестики‑нолики</h1>
+
+        <!-- Lobby Card -->
+        <div class="lobby-card" id="lobby">
+            <button id="create-room" class="neon-btn">Создать комнату</button>
+            <h3>Доступные комнаты</h3>
+            <ul id="room-list" class="room-list"></ul>
+        </div>
+
+        <!-- Player info -->
+        <div id="player-info" class="info"></div>
+        <div id="turn-info" class="info"></div>
+
+        <!-- Game board (hidden until join) -->
+        <div id="game" class="game-board" style="display:none;">
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+        </div>
+        <button id="restart" class="neon-btn" style="display:none;">Рестарт</button>
+        <!-- Modal for creating / joining rooms -->
+    <div id="room-modal" class="modal">
+      <div class="modal-content">
+        <h2 id="modal-title" style="margin-top:0;">Создать комнату</h2>
+        <div id="create-fields">
+          <input type="text" id="room-name" placeholder="Название комнаты" />
+        </div>
+        <div>
+          <input type="password" id="room-pass" placeholder="Пароль (необязательно)" />
+        </div>
+        <div class="modal-actions" style="text-align:right;">
+          <button id="modal-cancel" class="neon-btn" style="margin-right:0.5rem;">Отмена</button>
+          <button id="modal-submit" class="neon-btn">ОК</button>
+        </div>
+      </div>
+    </div>
+
+    </div>
+    <!-- Result overlay -->
+    <div id="result-overlay" class="overlay hidden"></div>
+    <script src="script.js"></script>
+
+</body>
+</html>
