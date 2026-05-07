@@ -124,10 +124,18 @@ function attachRoomHandlers(ws, roomId, password) {
   ws.roomId = roomId;
   ws.symbol = symbol;
 
-  // Inform the newcomer and update lobby for everybody
-  ws.send(JSON.stringify({ type: 'joined', roomId, symbol }));
-  broadcast(room, { type: 'state', board: room.board, turn: room.turn });
-  broadcastRoomList();
+   // Inform the newcomer and update lobby for everybody
+   ws.send(JSON.stringify({ type: 'joined', roomId, symbol }));
+   // Show waiting overlay for the first player (if no opponent yet)
+   if (room.players.size === 1) {
+     ws.send(JSON.stringify({ type: 'wait' }));
+   }
+   broadcast(room, { type: 'state', board: room.board, turn: room.turn });
+   // If second player just joined, notify both that opponent arrived
+   if (room.players.size === 2) {
+     broadcast(room, { type: 'opponentJoined' });
+   }
+   broadcastRoomList();
 
   // ------- Game messages -------
   ws.on('message', raw => {

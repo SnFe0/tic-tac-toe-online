@@ -1,3 +1,40 @@
+body {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(0,255,255,0.12), transparent 40%),
+    radial-gradient(circle at 80% 30%, rgba(168,85,247,0.10), transparent 45%),
+    radial-gradient(circle at 50% 80%, rgba(255,78,205,0.08), transparent 50%),
+    linear-gradient(135deg, var(--bg-dark-1), var(--bg-dark-2));
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(0,255,255,0.12), transparent 50%),
+    radial-gradient(circle at 70% 70%, rgba(168,85,247,0.10), transparent 55%);
+  filter: blur(60px);
+  animation: floatBg 12s ease-in-out infinite alternate;
+  z-index: -1;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 50px 50px;
+  opacity: 0.2;
+  z-index: -1;
+}
+
+@keyframes floatBg {
+  0% { transform: scale(1) translate(0,0); }
+  100% { transform: scale(1.08) translate(-2%,2%); }
+}
+
 .modal {
   display:none; /* hidden by default */
   position: fixed;
@@ -100,8 +137,8 @@
     --glass-bg: rgba(15,15,30,0.45);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;font-family:'Orbitron',sans-serif;background:linear-gradient(135deg,var(--bg-dark-1),var(--bg-dark-2));color:#fff;display:flex;align-items:center;justify-content:center;overflow:visible}
- .wrapper{max-width:540px;width:90%;text-align:center}
+html,body{height:100%;font-family:'Orbitron',sans-serif;);color:#fff;display:flex;align-items:center;justify-content:center;overflow:visible}
+ .wrapper{max-width:540px;width:90%;text-align:center;background:transparent;}
 .title{font-size:2.6rem;margin:0 auto 2rem;display:block;width:100%;text-align:center;text-shadow:0 0 8px var(--c-cyan),0 0 12px var(--c-cyan);animation:pulse 3s infinite ease-in-out;overflow:visible;white-space:normal;transform:translateX(-18px)}
 @keyframes pulse{0%{text-shadow:0 0 8px var(--c-cyan),0 0 12px var(--c-cyan)}50%{text-shadow:0 0 12px var(--c-cyan),0 0 18px var(--c-cyan)}100%{text-shadow:0 0 8px var(--c-cyan),0 0 12px var(--c-cyan)}}
 .lobby-card{background:var(--glass-bg);border-radius:16px;padding:1.5rem;margin-bottom:2rem;backdrop-filter:blur(12px);border:2px solid rgba(255,255,255,0.12);box-shadow:0 0 15px rgba(0,255,255,0.2),inset 0 0 8px rgba(0,255,255,0.2)}
