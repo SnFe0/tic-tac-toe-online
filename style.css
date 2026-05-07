@@ -60,18 +60,22 @@ body::after {
   justify-content: center;
   opacity: 0;
   visibility: hidden;
-  transition: opacity .3s ease;
+  transition: opacity .3s ease, visibility 0s linear .3s;
   z-index: 2000;
 }
 .overlay.show {
   opacity: 1;
   visibility: visible;
+  transition:
+	opacity .3s ease,
+	visibility 0s;
 }
-.overlay.hidden{opacity:0;visibility:hidden;}.overlay h2 {
+.overlay h2 {
   color: #fff;
   font-size: 2rem;
   text-shadow: 0 0 12px var(--c-cyan);
 }
+
 
 /* Glassmorphism modal content */
 .modal-content {

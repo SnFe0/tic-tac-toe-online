@@ -21,7 +21,7 @@ function showResult(text) {
     resultOverlay.classList.remove('show');
     // after fade-out transition add hidden class to keep it invisible
     setTimeout(() => resultOverlay.classList.add('hidden'), 300);
-  }, 2500);
+  }, 1000);
 }
 
 
