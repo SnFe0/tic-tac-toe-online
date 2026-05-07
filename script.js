@@ -159,14 +159,16 @@ socket.addEventListener('message', e => {
         mySymbol = data.symbol;
         playerInfo.textContent = `Вы ходите ${mySymbol === 'X' ? 'крестиком' : 'ноликом'}`;
         showGame();
-      } else {
-        // second join notification – both players now know their symbols
-        mySymbol = data.symbol;
-        const msg = mySymbol === 'X' ? 'Вы ходите крестиком' : 'Вы ходите ноликом';
-        showResult(msg);
-        // ensure game view is visible
-        showGame();
-      }
+        } else {
+          // second join notification – both players now know their symbols
+          mySymbol = data.symbol;
+          // update role display
+          playerInfo.textContent = `Вы ходите ${mySymbol === 'X' ? 'крестиком' : 'ноликом'}`;
+          const msg = mySymbol === 'X' ? 'Вы ходите крестиком' : 'Вы ходите ноликом';
+          showResult(msg);
+          // ensure game view is visible
+          showGame();
+        }
       break;
     case 'state':
       board = data.board;
