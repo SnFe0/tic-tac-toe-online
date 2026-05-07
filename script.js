@@ -37,6 +37,8 @@ function showLobby() {
   turnInfo.textContent = '';
 }
 function showGame() {
+  // hide restart button during active game; it will be shown only when the game ends
+  restartBtn.style.display = 'none';
   lobbyDiv.style.display = 'none';
   gameDiv.style.display = 'grid';
   restartBtn.style.display = 'inline-block';
@@ -144,8 +146,10 @@ socket.addEventListener('message', e => {
     case 'end':
       board = data.board;
       renderBoard();
-      if (data.winner) showResult(`Победил ${data.winner}!`);
-      else if (data.draw) showResult('Ничья');
+        if (data.winner) showResult(`Победил ${data.winner}!`);
+        else if (data.draw) showResult('Ничья');
+        // show restart button now that игра завершена
+    
       break;
     case 'roomList':
       renderRoomList(data.rooms);
