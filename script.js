@@ -10,14 +10,18 @@ function hideWaiting(){
   setTimeout(()=>{
     resultOverlay.classList.remove('show');
     resultOverlay.classList.add('hidden');
-  }, 300);
+  }, 1000);
 }
 
 function showResult(text) {
   resultOverlay.innerHTML = `<h2>${text}</h2>`;
   resultOverlay.classList.remove('hidden');
   resultOverlay.classList.add('show');
-  setTimeout(() => resultOverlay.classList.remove('show'), 2500);
+  setTimeout(() => {
+    resultOverlay.classList.remove('show');
+    // after fade-out transition add hidden class to keep it invisible
+    setTimeout(() => resultOverlay.classList.add('hidden'), 300);
+  }, 2500);
 }
 
 
