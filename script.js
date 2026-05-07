@@ -153,23 +153,23 @@ socket.addEventListener('message', e => {
     case 'state':
       board = data.board;
       renderBoard();
-        restartBtn.style.display = 'none';
-        turnInfo.textContent = `Сейчас ходит ${data.turn === 'X' ? 'крестик' : 'нолик'}`;
+      restartBtn.style.display = 'none';
+      turnInfo.textContent = `Сейчас ходит ${data.turn === 'X' ? 'крестик' : 'нолик'}`;
       break;
     case 'end':
       board = data.board;
       renderBoard();
-        if (data.winner) showResult(`Победил ${data.winner}!`);
-        else if (data.draw) showResult('Ничья');
-        restartBtn.style.display = 'inline-block';
-    
+      if (data.winner) showResult(`Победил ${data.winner}!`);
+      else if (data.draw) showResult('Ничья');
+      restartBtn.style.display = 'inline-block';
       break;
-      case 'wait':
-        showWaiting();
-        break;
-      case 'opponentJoined':
-        hideWaiting();
-        break;
+    case 'wait':
+      showWaiting();
+      break;
+    case 'opponentJoined':
+      hideWaiting();
+      break;
+    case 'roomList':
       renderRoomList(data.rooms);
       break;
     case 'error':
