@@ -7,8 +7,10 @@ function showWaiting(){
   resultOverlay.classList.add('show');
 }
 function hideWaiting(){
-  resultOverlay.classList.remove('show');
-  resultOverlay.classList.add('hidden');
+  setTimeout(()=>{
+    resultOverlay.classList.remove('show');
+    resultOverlay.classList.add('hidden');
+  }, 300);
 }
 
 function showResult(text) {
