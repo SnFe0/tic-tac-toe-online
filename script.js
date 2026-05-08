@@ -29,6 +29,7 @@ const playerInfo = document.getElementById('player-info');
 const turnInfo   = document.getElementById('turn-info');
 const lobbyDiv   = document.getElementById('lobby');
 const createBtn  = document.getElementById('create-room');
+const restartBtn = document.getElementById('restart');
 const leaveBtn = document.getElementById('leave');
 const roomListUl = document.getElementById('room-list');
 const gameDiv    = document.getElementById('game');
