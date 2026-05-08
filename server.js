@@ -180,8 +180,23 @@ function attachRoomHandlers(ws, roomId, password) {
 
     // 4. Leave request – player exits the room
     if (data.type === 'leave') {
-      // Close the socket; cleanup will happen in the 'close' event handler
-      ws.close();
+      const room = rooms.get(ws.roomId);
+      if (room) {
+        room.players.delete(ws);
+        // clear socket state so it can join another room later
+        ws.roomId = null;
+        ws.symbol = null;
+        // remove old message listeners to avoid duplication
+        ws.removeAllListeners('message');
+        // inform leaving player
+        ws.send(JSON.stringify({ type: 'left' }));
+        if (room.players.size > 0) {
+          broadcast(room, { type: 'info', msg: 'Opponent left' });
+        } else {
+          rooms.delete(ws.roomId);
+        }
+        broadcastRoomList();
+      }
       return;
     }
 

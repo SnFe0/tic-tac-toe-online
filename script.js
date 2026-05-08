@@ -212,15 +212,17 @@ socket.addEventListener('message', e => {
       break;
     case 'info':
       console.log(data.msg);
-      if (data.msg === 'Opponent left') {
-        // reset client state
-        roomId = null;
-        mySymbol = null;
-        board = Array(9).fill('');
-        gameActive = false;
-        hasJoined = false;
-        showLobby();
-      }
+      // Show a transient message but keep the player inside the room
+      showResult(data.msg);
+      break;
+    case 'left':
+      // This client left the room – reset UI and state, keep socket alive
+      roomId = null;
+      mySymbol = null;
+      board = Array(9).fill('');
+      gameActive = false;
+      hasJoined = false;
+      showLobby();
       break;
   }
 });
