@@ -154,6 +154,10 @@ html,body{height:100%;font-family:'Orbitron',sans-serif;);color:#fff;display:fle
 .room-list button:hover{color:var(--c-pink)}
 #player-info,#turn-info{margin:0.5rem 0;color:var(--c-cyan)}
 #game{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;max-width:320px;margin:0 auto}
+#leave {
+  display: block;
+  margin: 1rem auto 0; /* вниз + по центру */
+}
 /* Increased symbol size and added appearance animation */
 .cell{width:100%;aspect-ratio:1;background:var(--glass-bg);border:2px solid rgba(255,255,255,0.12);font-size:5rem;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s;overflow:hidden;}
 .cell:hover{background:rgba(0,255,255,0.1)}

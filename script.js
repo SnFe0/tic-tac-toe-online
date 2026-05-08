@@ -168,6 +168,9 @@ socket.addEventListener('message', e => {
   const data = JSON.parse(e.data);
   switch (data.type) {
     case 'joined':
+	  gameActive = true;
+	  board = Array(9).fill('');
+	  renderBoard();
       if (!hasJoined) {
         // first time we receive join info
         hasJoined = true;
@@ -251,6 +254,13 @@ leaveBtn.addEventListener('click', () => {
 createBtn.addEventListener('click', () => openModal('create'));
 
 cells.forEach(cell => cell.addEventListener('click', handleCellClick));
+
+restartBtn.addEventListener('click', () => {
+  socket.send(JSON.stringify({
+    type: 'restart',
+    roomId
+  }));
+});
 
 // Placeholder helpers – not used
 function checkWin() {}
