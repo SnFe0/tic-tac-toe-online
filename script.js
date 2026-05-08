@@ -36,6 +36,7 @@ const gameDiv    = document.getElementById('game');
 
 // WebSocket подключение к текущему хосту
 const socket = new WebSocket(`ws://${location.host}`);
+socket.addEventListener('close', () => {
   // connection closed – likely because we left the room
   roomId = null;
   mySymbol = null;
@@ -44,11 +45,14 @@ const socket = new WebSocket(`ws://${location.host}`);
   hasJoined = false;
   showLobby();
 });
+
+// client state variables
 let mySymbol = null;          // X или O, получаем от сервера
 let roomId = null;            // текущая комната
 let board = Array(9).fill('');
 let gameActive = true;
 let hasJoined = false;
+
 
 const winningCombinations = [
     [0, 1, 2], [3, 4, 5], [6, 7, 8],
