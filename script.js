@@ -29,7 +29,7 @@ const playerInfo = document.getElementById('player-info');
 const turnInfo   = document.getElementById('turn-info');
 const lobbyDiv   = document.getElementById('lobby');
 const createBtn  = document.getElementById('create-room');
-const restartBtn = document.getElementById('restart');
+const leaveBtn = document.getElementById('leave');
 const roomListUl = document.getElementById('room-list');
 const gameDiv    = document.getElementById('game');
 
@@ -52,12 +52,14 @@ function showLobby() {
   lobbyDiv.style.display = 'block';
   gameDiv.style.display = 'none';
   restartBtn.style.display = 'none';
+  leaveBtn.style.display = 'none';
   playerInfo.textContent = '';
   turnInfo.textContent = '';
 }
 function showGame() {
   // hide restart button during active game; it will be shown only when the game ends
   restartBtn.style.display = 'none';
+  leaveBtn.style.display = 'inline-block';
   lobbyDiv.style.display = 'none';
   gameDiv.style.display = 'grid';
 
@@ -197,6 +199,15 @@ socket.addEventListener('message', e => {
       break;
     case 'info':
       console.log(data.msg);
+      if (data.msg === 'Opponent left') {
+        // reset client state
+        roomId = null;
+        mySymbol = null;
+        board = Array(9).fill('');
+        gameActive = false;
+        hasJoined = false;
+        showLobby();
+      }
       break;
   }
 });
@@ -217,10 +228,9 @@ function handleCellClick(e) {
   socket.send(JSON.stringify({type: 'move', roomId, index: idx}));
 }
 
-restartBtn.addEventListener('click', () => {
-  socket.send(JSON.stringify({type: 'restart', roomId}));
-  // hide button again until next game ends
-  restartBtn.style.display = 'none';
+leaveBtn.addEventListener('click', () => {
+  socket.send(JSON.stringify({type: 'leave', roomId}));
+  // UI will be reset on server response
 });
 
 createBtn.addEventListener('click', () => openModal('create'));
