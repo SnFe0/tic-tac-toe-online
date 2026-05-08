@@ -1,11 +1,48 @@
 // ------------------- Онлайн‑мультиплеер (WebSocket) -------------------
 const cells = document.querySelectorAll('.cell');
 const resultOverlay = document.getElementById('result-overlay');
-function showWaiting(){
-  resultOverlay.innerHTML = '<h2>Ожидаем соперника...</h2>';
-  resultOverlay.classList.remove('hidden');
-  resultOverlay.classList.add('show');
+// Оверлей сообщение
+function setOverlay(text, mode = 'show', timeout = null) {
+  resultOverlay.innerHTML = `<h2>${text}</h2>`;
+
+  resultOverlay.classList.remove('show', 'hidden');
+  void resultOverlay.offsetWidth;
+  resultOverlay.classList.add(mode);
+
+  if (timeout) {
+    setTimeout(() => {
+      resultOverlay.classList.remove('show');
+      resultOverlay.classList.add('hidden');
+    }, timeout);
+  }
 }
+
+// ---------- Overlay helper ----------
+function setOverlay(text, mode = 'show', timeout = null) {
+  resultOverlay.innerHTML = `<h2>${text}</h2>`;
+  resultOverlay.classList.remove('show', 'hidden');
+  // force reflow
+  void resultOverlay.offsetWidth;
+  resultOverlay.classList.add(mode);
+  if (timeout) {
+    setTimeout(() => {
+      resultOverlay.classList.remove('show');
+      resultOverlay.classList.add('hidden');
+    }, timeout);
+  }
+}
+
+// Deprecated helpers – replaced by setOverlay
+function showWaiting(){
+  setOverlay('Ожидаем соперника...', 'show');
+}
+function hideWaiting(){
+  setOverlay('', 'hidden');
+}
+function showResult(text){
+  setOverlay(text, 'show', 1000);
+}
+
 function hideWaiting(){
   setTimeout(()=>{
     resultOverlay.classList.remove('show');
@@ -206,6 +243,19 @@ socket.addEventListener('message', e => {
       break;
     case 'opponentJoined':
       hideWaiting();
+      break;
+	case 'opponentLeft':
+	  board = Array(9).fill('');
+	  renderBoard();
+	  gameActive = false;
+	  setOverlay('Соперник вышел', true);
+	  
+	  setTimeout(() => {
+		  setOverlay('Ожидаем соперника...', true);
+	  }, 1200);
+	  
+	  turnInfo.textContent = '';
+	  restartBtn.style.display = 'none';
       break;
     case 'roomList':
       renderRoomList(data.rooms);
