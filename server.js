@@ -87,6 +87,134 @@ wss.on('connection', ws => {
     }
 
     if (msg.type === 'join' && typeof msg.roomId === 'string') {
+      ws.removeListener('message', ws.initialHandler);
+      attachRoomHandlers(ws, msg.roomId, msg.password);
+      return;
+    }
+
+    ws.send(JSON.stringify({ type: 'error', msg: 'Invalid request' }));
+  };
+  ws.initialHandler = initialHandler;
+  ws.on('message', ws.initialHandler);
+});
+
+function attachRoomHandlers(ws, roomId, password) {
+  // Find or create the room
+  let room = rooms.get(roomId);
+    if (!room) {
+      room = { board: Array(9).fill(''), turn: 'X', players: new Set(), password: password || null };
+      rooms.set(roomId, room);
+    }
+
+    // If room has a password, verify it
+    // (omitted for brevity)
+
+    // Register player
+    room.players.add(ws);
+    const symbol = room.players.size === 1 ? 'X' : 'O';
+    ws.roomId = roomId;
+    ws.symbol = symbol;
+
+    // Inform the newcomer and update lobby for everybody
+    ws.send(JSON.stringify({ type: 'joined', roomId, symbol }));
+    // Show waiting overlay for the first player (if no opponent yet)
+    if (room.players.size === 1) {
+      ws.send(JSON.stringify({ type: 'wait' }));
+    }
+    broadcast(room, { type: 'state', board: room.board, turn: room.turn });
+    // If second player just joined, assign random symbols and notify both
+    if (room.players.size === 2) {
+      const playersArray = Array.from(room.players);
+      const first = playersArray[0];
+      const second = playersArray[1];
+      const assignXtoFirst = Math.random() < 0.5;
+      first.symbol = assignXtoFirst ? 'X' : 'O';
+      second.symbol = assignXtoFirst ? 'O' : 'X';
+      // Ensure turn starts with X
+      room.turn = 'X';
+      // Notify both players of their symbols
+      first.send(JSON.stringify({ type: 'joined', roomId, symbol: first.symbol }));
+      second.send(JSON.stringify({ type: 'joined', roomId, symbol: second.symbol }));
+      // Notify both that opponent has joined (overlay hide)
+      broadcast(room, { type: 'opponentJoined' });
+    }
+
+    // ------- Game messages -------
+    const roomHandler = raw => {
+      let data;
+      try { data = JSON.parse(raw); } catch (_) { return; }
+
+      // 1. Move
+      if (data.type === 'move') {
+        if (ws.symbol !== room.turn) return; // not this player's turn
+        const idx = data.index;
+        if (typeof idx !== 'number' || idx < 0 || idx > 8) return;
+        if (room.board[idx]) return; // occupied
+
+        room.board[idx] = ws.symbol;
+        if (checkWin(room.board, ws.symbol)) {
+          broadcast(room, { type: 'end', board: room.board, winner: ws.symbol });
+          resetRoom(room);
+          broadcastRoomList();
+          return;
+        }
+        if (room.board.every(c => c)) {
+          broadcast(room, { type: 'end', board: room.board, draw: true });
+          resetRoom(room);
+          broadcastRoomList();
+          return;
+        }
+        room.turn = room.turn === 'X' ? 'O' : 'X';
+        broadcast(room, { type: 'state', board: room.board, turn: room.turn });
+      }
+
+      // 2. Restart request – player wants a fresh game
+      if (data.type === 'restart') {
+        // Reset board and reassign random symbols for a fresh game
+        resetRoom(room);
+        // Randomly decide which player gets X
+        const playersArray = Array.from(room.players);
+        if (playersArray.length === 2) {
+          const first = playersArray[0];
+          const second = playersArray[1];
+          const assignXtoFirst = Math.random() < 0.5;
+          first.symbol = assignXtoFirst ? 'X' : 'O';
+          second.symbol = assignXtoFirst ? 'O' : 'X';
+          // Notify both players of their new symbols
+          first.send(JSON.stringify({ type: 'joined', roomId, symbol: first.symbol }));
+          second.send(JSON.stringify({ type: 'joined', roomId, symbol: second.symbol }));
+          // Inform both that opponent is present
+          broadcast(room, { type: 'opponentJoined' });
+        }
+        // Send updated state (empty board, turn X)
+        broadcast(room, { type: 'state', board: room.board, turn: room.turn });
+      }
+
+      // 3. Explicit lobby refresh request
+      if (data.type === 'roomList') {
+        sendRoomList(ws);
+      }
+    };
+    ws.roomHandler = roomHandler;
+    ws.on('message', ws.roomHandler);
+
+    // ------- Cleanup on disconnect -------
+    ws.on('close', () => {
+      const r = rooms.get(ws.roomId);
+      if (!r) return;
+      r.players.delete(ws);
+      if (r.players.size === 0) {
+        rooms.delete(ws.roomId);
+      } else {
+        // Notify remaining player that opponent left
+        broadcast(r, { type: 'info', msg: 'Opponent left' });
+      }
+      broadcastRoomList();
+    });
+}
+
+
+    if (msg.type === 'join' && typeof msg.roomId === 'string') {
       ws.removeListener('message', initialHandler);
         attachRoomHandlers(ws, msg.roomId, msg.password);
       return;
@@ -183,18 +311,21 @@ function attachRoomHandlers(ws, roomId, password) {
       const room = rooms.get(ws.roomId);
       if (room) {
         room.players.delete(ws);
+        // detach room‑specific message handler
+        if (ws.roomHandler) ws.off('message', ws.roomHandler);
         // clear socket state so it can join another room later
+        const oldRoomId = ws.roomId;
         ws.roomId = null;
         ws.symbol = null;
-        // remove old message listeners to avoid duplication
-        ws.removeAllListeners('message');
         // inform leaving player
         ws.send(JSON.stringify({ type: 'left' }));
         if (room.players.size > 0) {
           broadcast(room, { type: 'info', msg: 'Opponent left' });
         } else {
-          rooms.delete(ws.roomId);
+          rooms.delete(oldRoomId);
         }
+        broadcastRoomList();
+      }
         broadcastRoomList();
       }
       return;
