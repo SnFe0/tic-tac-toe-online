@@ -180,18 +180,8 @@ function attachRoomHandlers(ws, roomId, password) {
 
     // 4. Leave request – player exits the room
     if (data.type === 'leave') {
-      // Remove player from room
-      room.players.delete(ws);
-      // If other player remains, notify them
-      if (room.players.size > 0) {
-        broadcast(room, { type: 'info', msg: 'Opponent left' });
-        // Optionally close the room for remaining player – here we keep room alive so they can create new game
-      } else {
-        // No players left – delete room
-        rooms.delete(ws.roomId);
-      }
-      // Reset UI for leaving player will be handled client‑side when socket closes or on receiving 'info'
-      broadcastRoomList();
+      // Close the socket; cleanup will happen in the 'close' event handler
+      ws.close();
       return;
     }
 
