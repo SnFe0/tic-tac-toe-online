@@ -1,27 +1,13 @@
 // ------------------- Онлайн‑мультиплеер (WebSocket) -------------------
 const cells = document.querySelectorAll('.cell');
 const resultOverlay = document.getElementById('result-overlay');
-// Оверлей сообщение
-function setOverlay(text, mode = 'show', timeout = null) {
-  resultOverlay.innerHTML = `<h2>${text}</h2>`;
 
-  resultOverlay.classList.remove('show', 'hidden');
-  void resultOverlay.offsetWidth;
-  resultOverlay.classList.add(mode);
-
-  if (timeout) {
-    setTimeout(() => {
-      resultOverlay.classList.remove('show');
-      resultOverlay.classList.add('hidden');
-    }, timeout);
-  }
-}
 
 // ---------- Overlay helper ----------
 function setOverlay(text, mode = 'show', timeout = null) {
   resultOverlay.innerHTML = `<h2>${text}</h2>`;
   resultOverlay.classList.remove('show', 'hidden');
-  // force reflow
+  // force reflow for transition restart
   void resultOverlay.offsetWidth;
   resultOverlay.classList.add(mode);
   if (timeout) {
@@ -31,36 +17,6 @@ function setOverlay(text, mode = 'show', timeout = null) {
     }, timeout);
   }
 }
-
-// Deprecated helpers – replaced by setOverlay
-function showWaiting(){
-  setOverlay('Ожидаем соперника...', 'show');
-}
-function hideWaiting(){
-  setOverlay('', 'hidden');
-}
-function showResult(text){
-  setOverlay(text, 'show', 1000);
-}
-
-function hideWaiting(){
-  setTimeout(()=>{
-    resultOverlay.classList.remove('show');
-    resultOverlay.classList.add('hidden');
-  }, 1000);
-}
-
-function showResult(text) {
-  resultOverlay.innerHTML = `<h2>${text}</h2>`;
-  resultOverlay.classList.remove('hidden');
-  resultOverlay.classList.add('show');
-  setTimeout(() => {
-    resultOverlay.classList.remove('show');
-    // after fade-out transition add hidden class to keep it invisible
-    setTimeout(() => resultOverlay.classList.add('hidden'), 300);
-  }, 1000);
-}
-
 
 const playerInfo = document.getElementById('player-info');
 const turnInfo   = document.getElementById('turn-info');
@@ -205,25 +161,20 @@ socket.addEventListener('message', e => {
   const data = JSON.parse(e.data);
   switch (data.type) {
     case 'joined':
-	  gameActive = true;
-	  board = Array(9).fill('');
-	  renderBoard();
+      gameActive = true;
+      board = Array(9).fill('');
+      renderBoard();
       if (!hasJoined) {
-        // first time we receive join info
         hasJoined = true;
         mySymbol = data.symbol;
         playerInfo.textContent = `Вы ходите ${mySymbol === 'X' ? 'крестиком' : 'ноликом'}`;
         showGame();
-        } else {
-          // second join notification – both players now know their symbols
-          mySymbol = data.symbol;
-          // update role display
-          playerInfo.textContent = `Вы ходите ${mySymbol === 'X' ? 'крестиком' : 'ноликом'}`;
-          const msg = mySymbol === 'X' ? 'Вы ходите крестиком' : 'Вы ходите ноликом';
-          showResult(msg);
-          // ensure game view is visible
-          showGame();
-        }
+      } else {
+        mySymbol = data.symbol;
+        playerInfo.textContent = `Вы ходите ${mySymbol === 'X' ? 'крестиком' : 'ноликом'}`;
+        setOverlay(mySymbol === 'X' ? 'Вы ходите крестиком' : 'Вы ходите ноликом', 'show', 1000);
+        showGame();
+      }
       break;
     case 'state':
       board = data.board;
@@ -234,28 +185,26 @@ socket.addEventListener('message', e => {
     case 'end':
       board = data.board;
       renderBoard();
-      if (data.winner) showResult(`Победил ${data.winner}!`);
-      else if (data.draw) showResult('Ничья');
+      if (data.winner) setOverlay(`Победил ${data.winner}!`, 'show', 1000);
+      else if (data.draw) setOverlay('Ничья', 'show', 1000);
       restartBtn.style.display = 'inline-block';
       break;
     case 'wait':
-      showWaiting();
+      setOverlay('Ожидаем соперника...', 'show');
       break;
     case 'opponentJoined':
-      hideWaiting();
+      setOverlay(mySymbol === 'X' ? 'Вы ходите крестиком' : 'Вы ходите ноликом', 'show', 1000);
       break;
-	case 'opponentLeft':
-	  board = Array(9).fill('');
-	  renderBoard();
-	  gameActive = false;
-	  setOverlay('Соперник вышел', true);
-	  
-	  setTimeout(() => {
-		  setOverlay('Ожидаем соперника...', true);
-	  }, 1200);
-	  
-	  turnInfo.textContent = '';
-	  restartBtn.style.display = 'none';
+    case 'opponentLeft':
+      board = Array(9).fill('');
+      renderBoard();
+      gameActive = false;
+      setOverlay('Соперник вышел', 'show', 1200);
+      setTimeout(() => {
+        setOverlay('Ожидаем соперника...', 'show');
+      }, 1200);
+      turnInfo.textContent = '';
+      restartBtn.style.display = 'none';
       break;
     case 'roomList':
       renderRoomList(data.rooms);
@@ -265,11 +214,9 @@ socket.addEventListener('message', e => {
       break;
     case 'info':
       console.log(data.msg);
-      // Show a transient message but keep the player inside the room
-      showResult(data.msg);
+      setOverlay(data.msg, 'show', 1000);
       break;
     case 'left':
-      // This client left the room – reset UI and state, keep socket alive
       roomId = null;
       mySymbol = null;
       board = Array(9).fill('');
