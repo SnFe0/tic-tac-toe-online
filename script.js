@@ -2,12 +2,11 @@
 const cells = document.querySelectorAll('.cell');
 const resultOverlay = document.getElementById('result-overlay');
 
-
-// ---------- Overlay helper ----------
+// ---------- Управление оверлеем ----------
 function setOverlay(text, mode = 'show', timeout = null) {
   resultOverlay.innerHTML = `<h2>${text}</h2>`;
   resultOverlay.classList.remove('show', 'hidden');
-  // force reflow for transition restart
+  // принудительный рефлоу для перезапуска перехода
   void resultOverlay.offsetWidth;
   resultOverlay.classList.add(mode);
   if (timeout) {
@@ -18,19 +17,20 @@ function setOverlay(text, mode = 'show', timeout = null) {
   }
 }
 
-const playerInfo = document.getElementById('player-info');
-const turnInfo   = document.getElementById('turn-info');
-const lobbyDiv   = document.getElementById('lobby');
-const createBtn  = document.getElementById('create-room');
-const restartBtn = document.getElementById('restart');
-const leaveBtn = document.getElementById('leave');
-const roomListUl = document.getElementById('room-list');
-const gameDiv    = document.getElementById('game');
+// ---------- UI‑элементы ----------
+const playerInfo = document.getElementById('player-info'); // инфо о текущем игроке
+const turnInfo   = document.getElementById('turn-info');   // чей сейчас ход
+const lobbyDiv   = document.getElementById('lobby');      // список комнат
+const createBtn  = document.getElementById('create-room'); // кнопка создания комнаты
+const restartBtn = document.getElementById('restart');     // кнопка рестарта партии
+const leaveBtn = document.getElementById('leave');         // кнопка выхода из комнаты
+const roomListUl = document.getElementById('room-list');   // элемент списка комнат
+const gameDiv    = document.getElementById('game');        // игровое поле
 
-// WebSocket подключение к текущему хосту
+// ---------- WebSocket‑соединение ----------
 const socket = new WebSocket(`ws://${location.host}`);
 socket.addEventListener('close', () => {
-  // connection closed – likely because we left the room
+  // соединение закрыто (например, после выхода из комнаты)
   roomId = null;
   mySymbol = null;
   board = Array(9).fill('');
@@ -39,21 +39,21 @@ socket.addEventListener('close', () => {
   showLobby();
 });
 
-// client state variables
+// ---------- Состояние клиента ----------
 let mySymbol = null;          // X или O, получаем от сервера
-let roomId = null;            // текущая комната
+let roomId = null;            // текущий идентификатор комнаты
 let board = Array(9).fill('');
-let gameActive = true;
-let hasJoined = false;
+let gameActive = true;        // флаг активности игровой сессии
+let hasJoined = false;        // флаг, что клиент уже получил свой символ
 
-
+// ---------- Выигрышные комбинации ----------
 const winningCombinations = [
     [0, 1, 2], [3, 4, 5], [6, 7, 8],
     [0, 3, 6], [1, 4, 7], [2, 5, 8],
     [0, 4, 8], [2, 4, 6]
 ];
 
-// ---------- UI helpers ----------
+// ---------- Вспомогательные функции UI ----------
 function showLobby() {
   lobbyDiv.style.display = 'block';
   gameDiv.style.display = 'none';
@@ -63,27 +63,25 @@ function showLobby() {
   turnInfo.textContent = '';
 }
 function showGame() {
-  // hide restart button during active game; it will be shown only when the game ends
+  // скрываем кнопку рестарта во время активной партии, показываем кнопку выхода
   restartBtn.style.display = 'none';
   leaveBtn.style.display = 'inline-block';
   lobbyDiv.style.display = 'none';
   gameDiv.style.display = 'grid';
-
 }
 
-// ---------- Modal handling ----------
+// ---------- Обработчики модального окна ----------
 const modal = document.getElementById('room-modal');
 const modalTitle = document.getElementById('modal-title');
 const roomNameInput = document.getElementById('room-name');
 const roomPassInput = document.getElementById('room-pass');
 const modalCancel = document.getElementById('modal-cancel');
 const modalSubmit = document.getElementById('modal-submit');
-let modalMode = 'create'; // 'create' or 'join'
-let pendingRoomId = null; // id of room we want to join (when mode='join')
+let modalMode = 'create'; // режим: создание или присоединение к комнате
+let pendingRoomId = null; // идентификатор комнаты, к которой хотим подключиться (режим join)
 
 function openModal(mode, roomId = null, locked = false) {
   console.log('openModal', mode, roomId, locked);
-  modalMode = mode;
   modalMode = mode;
   pendingRoomId = roomId;
   modal.classList.add('show');
@@ -116,7 +114,7 @@ modalSubmit.addEventListener('click', () => {
   closeModal();
 });
 
-// ---------- Room list rendering ----------
+// ---------- Отрисовка списка комнат ----------
 function renderRoomList(rooms) {
   // rooms – массив объектов {roomId, playersCount, locked}
   roomListUl.innerHTML = '';
@@ -128,7 +126,7 @@ function renderRoomList(rooms) {
       lockSpan.textContent = ' 🔒';
       li.appendChild(lockSpan);
     }
-    li.dataset.locked = r.locked; // храним статус
+    li.dataset.locked = r.locked; // сохраняем статус закрытой комнаты
     li.style.cursor = 'pointer';
     li.addEventListener('click', () => {
       const locked = li.dataset.locked === 'true';
@@ -143,7 +141,7 @@ function renderRoomList(rooms) {
   });
 }
 
-// ---------- Room actions ----------
+// ---------- Действия с комнатами ----------
 function createRoom() { console.log('createRoom called'); openModal('create'); }
 function joinRoomWithPassword(id, pwd) {
   console.log('Пытаемся присоединиться к комнате', id);
@@ -151,7 +149,7 @@ function joinRoomWithPassword(id, pwd) {
   socket.send(JSON.stringify({type: 'join', roomId, password: pwd}));
 }
 
-// ---------- WebSocket handling ----------
+// ---------- WebSocket‑обработчики ----------
 socket.addEventListener('open', () => {
   console.log('WebSocket открыт');
   socket.send(JSON.stringify({type: 'roomList'}));
@@ -192,9 +190,6 @@ socket.addEventListener('message', e => {
     case 'wait':
       setOverlay('Ожидаем соперника...', 'show');
       break;
-    case 'opponentJoined':
-      setOverlay(mySymbol === 'X' ? 'Вы ходите крестиком' : 'Вы ходите ноликом', 'show', 1000);
-      break;
     case 'opponentLeft':
       board = Array(9).fill('');
       renderBoard();
@@ -227,6 +222,7 @@ socket.addEventListener('message', e => {
   }
 });
 
+// ---------- Рендеринг доски ----------
 function renderBoard() {
   board.forEach((sym, i) => {
     const cell = cells[i];
@@ -245,7 +241,6 @@ function handleCellClick(e) {
 
 leaveBtn.addEventListener('click', () => {
   socket.send(JSON.stringify({type: 'leave', roomId}));
-  // UI will be reset on server response
 });
 
 createBtn.addEventListener('click', () => openModal('create'));
@@ -253,12 +248,10 @@ createBtn.addEventListener('click', () => openModal('create'));
 cells.forEach(cell => cell.addEventListener('click', handleCellClick));
 
 restartBtn.addEventListener('click', () => {
-  socket.send(JSON.stringify({
-    type: 'restart',
-    roomId
-  }));
+  socket.send(JSON.stringify({type: 'restart', roomId}));
 });
 
-// Placeholder helpers – not used
+// Пустые заглушки, не используются в текущей реализации
 function checkWin() {}
 function highlightWinningCells() {}
+

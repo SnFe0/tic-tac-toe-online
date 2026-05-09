@@ -5,9 +5,11 @@ const WebSocket = require('ws');
 
 const PORT = process.env.PORT || 8000;
 
-// ---------- HTTP server to serve static files ----------
+// ---------- HTTP-сервер для отдачи статических файлов клиенту ----------
 const server = http.createServer((req, res) => {
-  // Serve index.html, style.css, script.js from the project root
+  // Отдаём файлы index.html, style.css и script.js из корневой папки проекта.
+// Когда пользователь открывает сайт в браузере, именно этот код читает нужный файл
+// с диска и отправляет его клиенту.
   let filePath = '.' + req.url;
   if (filePath === './') filePath = './index.html';
   const ext = path.extname(filePath).toLowerCase();
@@ -31,13 +33,24 @@ const server = http.createServer((req, res) => {
 
 const wss = new WebSocket.Server({ server });
 
-// ---------- In‑memory rooms ----------
-const rooms = new Map(); // roomId -> {board, turn, players:Set, password}
+// ---------- Хранилище комнат в оперативной памяти ----------
+const rooms = new Map();
+// rooms — это Map, где:
+//   ключ   = идентификатор комнаты (roomId),
+//   значение = объект с состоянием комнаты:
+//     board    — массив из 9 клеток игрового поля,
+//     turn     — символ игрока, который должен ходить ('X' или 'O'),
+//     players  — Set с WebSocket‑подключениями игроков,
+//     password — пароль комнаты или null, если пароль не установлен.
 
+// Сбрасывает состояние комнаты после окончания партии.
+// Очищает игровое поле и устанавливает первый ход за символом X.
 function resetRoom(room) {
   room.board = Array(9).fill('');
   room.turn = 'X';
 }
+// Проверяет, собрал ли указанный символ выигрышную комбинацию.
+// Возвращает true, если игрок занял три клетки подряд.
 function checkWin(board, sym) {
   const combos = [
     [0,1,2],[3,4,5],[6,7,8],
@@ -46,10 +59,12 @@ function checkWin(board, sym) {
   ];
   return combos.some(c => c.every(i => board[i] === sym));
 }
+// Отправляет одно и то же сообщение всем игрокам, находящимся в указанной комнате.
 function broadcast(room, msg) {
   const data = JSON.stringify(msg);
   for (const p of room.players) p.send(data);
 }
+// Формирует и отправляет клиенту список доступных комнат.
 function sendRoomList(ws) {
   const list = [];
   for (const [id, r] of rooms) {
@@ -57,6 +72,7 @@ function sendRoomList(ws) {
   }
   ws.send(JSON.stringify({ type:'roomList', rooms:list }));
 }
+// Формирует список комнат и рассылает его всем подключённым клиентам.
 function broadcastRoomList() {
   const list = [];
   for (const [id, r] of rooms) {
@@ -67,7 +83,9 @@ function broadcastRoomList() {
 }
 
 wss.on('connection', ws => {
-  // ---------- Initial handler (roomList / join) ----------
+  // ---------- Обработка новых WebSocket-подключений ----------
+// После подключения клиент должен первым сообщением либо запросить список комнат ('roomList'),
+// либо сразу попытаться войти в комнату ('join').
   const initialHandler = raw => {
     let msg;
     try { msg = JSON.parse(raw); } catch (_) { return; }
@@ -87,13 +105,14 @@ wss.on('connection', ws => {
 });
 
 function attachRoomHandlers(ws, roomId, password) {
-  // Find or create room
+  // Ищем комнату по её идентификатору.
+// Если такой комнаты ещё нет, создаём новую.
   let room = rooms.get(roomId);
   if (!room) {
     room = { board:Array(9).fill(''), turn:'X', players:new Set(), password: password || null };
     rooms.set(roomId, room);
   }
-  // Password check
+  // Если для комнаты установлен пароль, проверяем, что клиент указал правильный пароль.
   if (room.password && password !== room.password) {
     ws.send(JSON.stringify({ type:'error', msg:'Invalid password' }));
     return ws.close();
@@ -103,17 +122,17 @@ function attachRoomHandlers(ws, roomId, password) {
     return ws.close();
   }
 
-  // Register player
+  // Добавляем игрока в комнату и сохраняем его символ и идентификатор комнаты в объекте WebSocket.
   room.players.add(ws);
   ws.roomId = roomId;
   ws.symbol = room.players.size === 1 ? 'X' : 'O';
 
-  // Notify newcomer
+  // Сообщаем подключившемуся игроку, что он успешно вошёл в комнату.
   ws.send(JSON.stringify({ type:'joined', roomId, symbol: ws.symbol }));
   if (room.players.size === 1) ws.send(JSON.stringify({ type:'wait' }));
   broadcast(room, { type:'state', board:room.board, turn:room.turn });
 
-  // If second player joins, randomise symbols & notify both
+  // Когда в комнате становится два игрока, случайным образом определяем, кто будет играть крестиками, а кто ноликами, и отправляем эту информацию обоим игрокам.
   if (room.players.size === 2) {
     const arr = Array.from(room.players);
     const first = arr[0], second = arr[1];
@@ -123,15 +142,15 @@ function attachRoomHandlers(ws, roomId, password) {
     room.turn = 'X';
     first.send(JSON.stringify({ type:'joined', roomId, symbol:first.symbol }));
     second.send(JSON.stringify({ type:'joined', roomId, symbol:second.symbol }));
-    broadcast(room, { type:'opponentJoined' });
+    
   }
   broadcastRoomList();
 
-  // ---------- Room‑specific message handler ----------
+  // ---------- Обработчик сообщений внутри комнаты ----------
   const roomHandler = raw => {
     let data;
     try { data = JSON.parse(raw); } catch (_) { return; }
-    // Move
+    // Обработка хода игрока.
     if (data.type === 'move') {
       if (ws.symbol !== room.turn) return;
       const idx = data.index;
@@ -153,7 +172,8 @@ function attachRoomHandlers(ws, roomId, password) {
       room.turn = room.turn === 'X' ? 'O' : 'X';
       broadcast(room, { type:'state', board:room.board, turn:room.turn });
     }
-    // Restart – fresh game with new random symbols
+    // Перезапуск партии.
+// Поле очищается, а символы X и O заново распределяются случайным образом.
     if (data.type === 'restart') {
       resetRoom(room);
       const arr = Array.from(room.players);
@@ -164,11 +184,12 @@ function attachRoomHandlers(ws, roomId, password) {
         second.symbol = assignXtoFirst ? 'O' : 'X';
         first.send(JSON.stringify({ type:'joined', roomId, symbol:first.symbol }));
         second.send(JSON.stringify({ type:'joined', roomId, symbol:second.symbol }));
-        broadcast(room, { type:'opponentJoined' });
+        
       }
       broadcast(room, { type:'state', board:room.board, turn:room.turn });
     }
-    // Leave – detach only room handler, keep socket usable
+    // Игрок покидает комнату.
+// WebSocket‑соединение не закрывается, чтобы клиент мог сразу создать новую комнату или присоединиться к другой.
     if (data.type === 'leave') {
       const currentRoom = rooms.get(ws.roomId);
       if (currentRoom) {
@@ -182,20 +203,28 @@ function attachRoomHandlers(ws, roomId, password) {
         ws.symbol = null;
         ws.send(JSON.stringify({ type:'left' }));
         if (currentRoom.players.size > 0) {
-          broadcast(currentRoom, { type:'info', msg:'Соперник вышел' });
+		  const remaining = Array.from(currentRoom.players)[0];
+		  
+		  // сбрасываем состояние комнаты
+		  resetRoom(currentRoom);
+		  
+		  // уведомляем оставшегося игрока
+		  remaining.send(JSON.stringify({
+			type: 'opponentLeft'
+		  }));
         } else {
           rooms.delete(oldId);
         }
         broadcastRoomList();
       }
     }
-    // Request fresh room list
+    // Клиент запросил актуальный список доступных комнат.
     if (data.type === 'roomList') sendRoomList(ws);
   };
   ws.roomHandler = roomHandler;
   ws.on('message', ws.roomHandler);
 
-  // ---------- Cleanup on disconnect ----------
+  // ---------- Очистка данных при полном закрытии соединения ----------
   ws.on('close', () => {
     const r = rooms.get(ws.roomId);
     if (!r) return;
@@ -209,7 +238,7 @@ function attachRoomHandlers(ws, roomId, password) {
   });
 }
 
-// ---------- Start server ----------
+// ---------- Запуск HTTP- и WebSocket-сервера ----------
 server.listen(PORT, () => {
   console.log(`🚀 Server listening on http://0.0.0.0:${PORT}`);
   console.log(`   WS endpoint: ws://0.0.0.0:${PORT}`);

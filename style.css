@@ -1,4 +1,4 @@
-body {
+body { /* Корневой стиль для элемента body, задаёт фон страницы с несколькими градиентами и задаёт базовый цвет текста */
   background:
     radial-gradient(circle at 20% 20%, rgba(0,255,255,0.12), transparent 40%),
     radial-gradient(circle at 80% 30%, rgba(168,85,247,0.10), transparent 45%),
@@ -6,7 +6,7 @@ body {
     linear-gradient(135deg, var(--bg-dark-1), var(--bg-dark-2));
 }
 
-body::before {
+body::before { /* Псевдо‑элемент, создающий размытый цветной фон позади контента */
   content: "";
   position: fixed;
   inset: 0;
@@ -18,7 +18,7 @@ body::before {
   z-index: -1;
 }
 
-body::after {
+body::after { /* Псевдо‑элемент, добавляющий лёгкую сетку поверх фона для визуального шума */
   content: "";
   position: fixed;
   inset: 0;
@@ -30,12 +30,12 @@ body::after {
   z-index: -1;
 }
 
-@keyframes floatBg {
+@keyframes floatBg { /* Анимация плавного увеличения и смещения фонового градиента */
   0% { transform: scale(1) translate(0,0); }
   100% { transform: scale(1.08) translate(-2%,2%); }
 }
 
-.modal {
+.modal { /* Модальное окно, скрытое по умолчанию, центрировано и затемнённое */
   display:none; /* hidden by default */
   position: fixed;
   z-index: 1000;
@@ -50,7 +50,7 @@ body::after {
   align-items: center;
 }
 .modal.show { display:flex; }
-.overlay {
+.overlay { /* Оверлей, покрывающий весь экран, используется для отображения сообщений */
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0,0,0,0.72);
@@ -78,6 +78,7 @@ body::after {
 
 
 /* Glassmorphism modal content */
+/* Содержимое модального окна в стиле glassmorphism */
 .modal-content {
   background: rgba(10,14,30,0.72);
   backdrop-filter: blur(18px);
@@ -91,13 +92,13 @@ body::after {
   animation: modalAppear .25s ease;
 }
 
-@keyframes modalAppear {
+@keyframes modalAppear { /* Появление модального окна с лёгкой анимацией масштабирования */
   from { opacity:0; transform: translateY(10px) scale(.97); }
   to   { opacity:1; transform: translateY(0) scale(1); }
 }
 
 /* Title inside modal */
-.modal-content h2 {
+.modal-content h2 { /* Заголовок внутри модального окна, центрирован и подсвечен */
   text-align: center;
   margin-bottom: 1.4rem;
   color: #fff;
@@ -105,6 +106,7 @@ body::after {
 }
 
 /* Input styling */
+/* Стили для полей ввода внутри модального окна */
 .modal-content input {
   width: 100%;
   padding: 0.9rem 1rem;
@@ -124,6 +126,7 @@ body::after {
 }
 
 /* Buttons layout */
+/* Блок с действиями (кнопки) в модальном окне */
 .modal-actions {
   display: flex;
   justify-content: center;
@@ -132,6 +135,7 @@ body::after {
 }
 
 /* Keep rest of stylesheet */
+/* Корневые CSS‑переменные, задают цвета темы и стеклянный фон */
 :root {
     --bg-dark-1: #050814;
     --bg-dark-2: #070a1a;
@@ -142,36 +146,45 @@ body::after {
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;font-family:'Orbitron',sans-serif;);color:#fff;display:flex;align-items:center;justify-content:center;overflow:visible}
- .wrapper{max-width:540px;width:90%;text-align:center;background:transparent;}
+/* Обёртка главного контента, задаёт ширину и центрирование */
+.wrapper{max-width:540px;width:90%;text-align:center;background:transparent;}
+/* Стили заголовка страницы, неоновый эффект */
 .title{font-size:2.6rem;margin:0 auto 2rem;display:block;width:100%;text-align:center;text-shadow:0 0 8px var(--c-cyan),0 0 12px var(--c-cyan);animation:pulse 3s infinite ease-in-out;overflow:visible;white-space:normal;transform:translateX(-18px)}
 @keyframes pulse{0%{text-shadow:0 0 8px var(--c-cyan),0 0 12px var(--c-cyan)}50%{text-shadow:0 0 12px var(--c-cyan),0 0 18px var(--c-cyan)}100%{text-shadow:0 0 8px var(--c-cyan),0 0 12px var(--c-cyan)}}
+/* Карточка лобби, отображает информацию о комнате */
 .lobby-card{background:var(--glass-bg);border-radius:16px;padding:1.5rem;margin-bottom:2rem;backdrop-filter:blur(12px);border:2px solid rgba(255,255,255,0.12);box-shadow:0 0 15px rgba(0,255,255,0.2),inset 0 0 8px rgba(0,255,255,0.2)}
+/* Кнопки с неоновым оформлением */
 .neon-btn{font-family:inherit;font-size:1rem;padding:0.6rem 1.2rem;margin-bottom:1rem;background:rgba(255,255,255,0.08);color:var(--c-cyan);border:2px solid var(--c-cyan);border-radius:8px;cursor:pointer;transition:transform .2s,box-shadow .2s,background .2s;text-shadow:0 0 6px var(--c-cyan)}
 .neon-btn:hover{background:var(--c-cyan);color:#111;transform:scale(1.05);box-shadow:0 0 12px var(--c-cyan),0 0 20px var(--c-cyan)}
+/* Список доступных комнат */
 .room-list{list-style:none;padding:0;margin-top:0.8rem}
+/* Элемент списка комнаты, визуально отделённый и интерактивный */
 .room-list li{background:var(--glass-bg);border-radius:12px;padding:0.7rem 1rem;margin:0.6rem 0;display:flex;justify-content:space-between;align-items:center;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.1)}
 .room-list button{background:none;color:var(--c-purple);border:none;cursor:pointer;font-size:0.9rem;transition:color .2s}
 .room-list button:hover{color:var(--c-pink)}
 #player-info,#turn-info{margin:0.5rem 0;color:var(--c-cyan)}
-#game{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;max-width:320px;margin:0 auto}
+#game{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;max-width:320px;margin:0 auto /* Сетка игрового поля 3x3 */
 #leave {
   display: block;
   margin: 1rem auto 0; /* вниз + по центру */
 }
 /* Increased symbol size and added appearance animation */
+/* Одна клетка игрового поля */
 .cell{width:100%;aspect-ratio:1;background:var(--glass-bg);border:2px solid rgba(255,255,255,0.12);font-size:5rem;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s;overflow:hidden;}
 .cell:hover{background:rgba(0,255,255,0.1)}
+/* Стиль клетки, отмеченной крестиком (X) */
 .cell.x{
   color:var(--c-pink);
   text-shadow: 0 0 8px var(--c-pink), 0 0 12px var(--c-pink);
   animation: symbolAppear .3s ease forwards;
 }
+/* Стиль клетки, отмеченной ноликом (O) */
 .cell.o{
   color:var(--c-purple);
   text-shadow: 0 0 8px var(--c-purple), 0 0 12px var(--c-purple);
   animation: symbolAppear .3s ease forwards;
 }
 @keyframes symbolAppear {from{opacity:0;transform:scale(0.5);}to{opacity:1;transform:scale(1);}}
-#restart{margin-top:1rem;background:rgba(255,255,255,0.08);border:2px solid var(--c-pink);color:var(--c-pink);padding:0.6rem 1.2rem;border-radius:8px;cursor:pointer;transition:transform .2s,background .2s,color .2s}
+#restart{margin-top:1rem;background:rgba(255,255,255,0.08);border:2px solid var(--c-pink);color:var(--c-pink);padding:0.6rem 1.2rem;border-radius:8px;cursor:pointer;transition:transform .2s,background .2s,color .2s /* Кнопка перезапуска игры */
 #restart:hover{background:var(--c-pink);color:#111;transform:scale(1.05);box-shadow:0 0 12px var(--c-pink),0 0 20px var(--c-pink)}
 #restart:hover{background:var(--c-pink);color:#111;transform:scale(1.05);box-shadow:0 0 12px var(--c-pink),0 0 20px var(--c-pink)}
