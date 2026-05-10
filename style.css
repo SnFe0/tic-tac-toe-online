@@ -145,7 +145,7 @@ body::after { /* Псевдо‑элемент, добавляющий лёгк�
     --glass-bg: rgba(15,15,30,0.45);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;font-family:'Orbitron',sans-serif;);color:#fff;display:flex;align-items:center;justify-content:center;overflow:visible}
+html,body{height:100%;font-family:'Orbitron',sans-serif;color:#fff;display:flex;align-items:center;justify-content:center;overflow:visible}
 /* Обёртка главного контента, задаёт ширину и центрирование */
 .wrapper{max-width:540px;width:90%;text-align:center;background:transparent;}
 /* Стили заголовка страницы, неоновый эффект */
@@ -163,8 +163,8 @@ html,body{height:100%;font-family:'Orbitron',sans-serif;);color:#fff;display:fle
 .room-list button{background:none;color:var(--c-purple);border:none;cursor:pointer;font-size:0.9rem;transition:color .2s}
 .room-list button:hover{color:var(--c-pink)}
 #player-info,#turn-info{margin:0.5rem 0;color:var(--c-cyan)}
-#game{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;max-width:320px;margin:0 auto /* Сетка игрового поля 3x3 */
-#leave {
+#game{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;max-width:320px;margin:0 auto} /* Сетка игрового поля 3x3 */
+#leave{
   display: block;
   margin: 1rem auto 0; /* вниз + по центру */
 }
@@ -185,6 +185,5 @@ html,body{height:100%;font-family:'Orbitron',sans-serif;);color:#fff;display:fle
   animation: symbolAppear .3s ease forwards;
 }
 @keyframes symbolAppear {from{opacity:0;transform:scale(0.5);}to{opacity:1;transform:scale(1);}}
-#restart{margin-top:1rem;background:rgba(255,255,255,0.08);border:2px solid var(--c-pink);color:var(--c-pink);padding:0.6rem 1.2rem;border-radius:8px;cursor:pointer;transition:transform .2s,background .2s,color .2s /* Кнопка перезапуска игры */
-#restart:hover{background:var(--c-pink);color:#111;transform:scale(1.05);box-shadow:0 0 12px var(--c-pink),0 0 20px var(--c-pink)}
+#restart{margin-top:1rem;background:rgba(255,255,255,0.08);border:2px solid var(--c-pink);color:var(--c-pink);padding:0.6rem 1.2rem;border-radius:8px;cursor:pointer;transition:transform .2s,background .2s,color .2s} /* Кнопка перезапуска игры */
 #restart:hover{background:var(--c-pink);color:#111;transform:scale(1.05);box-shadow:0 0 12px var(--c-pink),0 0 20px var(--c-pink)}

@@ -82,6 +82,30 @@ function broadcastRoomList() {
   wss.clients.forEach(c => { if (c.readyState===WebSocket.OPEN) c.send(payload); });
 }
 
+function handlePlayerLeave(ws) {
+  const room = rooms.get(ws.roomId);
+  if (!room) return;
+
+  room.players.delete(ws);
+  if (ws.roomHandler) ws.off('message', ws.roomHandler);
+
+  const oldId = ws.roomId;
+  ws.roomId = null;
+  ws.symbol = null;
+
+  if (room.players.size === 0) {
+    // Комната пустая — удаляем
+    rooms.delete(oldId);
+  } else {
+    // Остался один игрок — сбрасываем доску и уведомляем
+    resetRoom(room);
+    const remaining = Array.from(room.players)[0];
+    remaining.send(JSON.stringify({ type: 'opponentLeft' }));
+  }
+
+  broadcastRoomList();
+}
+
 wss.on('connection', ws => {
   // ---------- Обработка новых WebSocket-подключений ----------
 // После подключения клиент должен первым сообщением либо запросить список комнат ('roomList'),
@@ -191,32 +215,9 @@ function attachRoomHandlers(ws, roomId, password) {
     // Игрок покидает комнату.
 // WebSocket‑соединение не закрывается, чтобы клиент мог сразу создать новую комнату или присоединиться к другой.
     if (data.type === 'leave') {
-      const currentRoom = rooms.get(ws.roomId);
-      if (currentRoom) {
-        currentRoom.players.delete(ws);
-        if (ws.roomHandler) ws.off('message', ws.roomHandler);
-		if (ws.initialHandler) {
-			ws.on('message', ws.initialHandler);
-		}
-        const oldId = ws.roomId;
-        ws.roomId = null;
-        ws.symbol = null;
-        ws.send(JSON.stringify({ type:'left' }));
-        if (currentRoom.players.size > 0) {
-		  const remaining = Array.from(currentRoom.players)[0];
-		  
-		  // сбрасываем состояние комнаты
-		  resetRoom(currentRoom);
-		  
-		  // уведомляем оставшегося игрока
-		  remaining.send(JSON.stringify({
-			type: 'opponentLeft'
-		  }));
-        } else {
-          rooms.delete(oldId);
-        }
-        broadcastRoomList();
-      }
+	  ws.send(JSON.stringify({type:'left'}));
+	  if (ws.initialHandler) ws.on('message', ws.initialHandler);
+	  handlePlayerLeave(ws);
     }
     // Клиент запросил актуальный список доступных комнат.
     if (data.type === 'roomList') sendRoomList(ws);
@@ -226,15 +227,7 @@ function attachRoomHandlers(ws, roomId, password) {
 
   // ---------- Очистка данных при полном закрытии соединения ----------
   ws.on('close', () => {
-    const r = rooms.get(ws.roomId);
-    if (!r) return;
-    r.players.delete(ws);
-    if (r.players.size === 0) {
-      rooms.delete(ws.roomId);
-    } else {
-      broadcast(r, { type:'info', msg:'Соперник вышел' });
-    }
-    broadcastRoomList();
+	handlePlayerLeave(ws);
   });
 }
 
