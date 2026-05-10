@@ -180,13 +180,14 @@ socket.addEventListener('message', e => {
       restartBtn.style.display = 'none';
       turnInfo.textContent = `Сейчас ходит ${data.turn === 'X' ? 'крестик' : 'нолик'}`;
       break;
-    case 'end':
-      board = data.board;
-      renderBoard();
-      if (data.winner) setOverlay(`Победил ${data.winner}!`, 'show', 1000);
-      else if (data.draw) setOverlay('Ничья', 'show', 1000);
-      restartBtn.style.display = 'inline-block';
-      break;
+      case 'end':
+        board = data.board;
+        renderBoard();
+        gameActive = false;
+        if (data.winner) setOverlay(`Победил ${data.winner}!`, 'show', 1000);
+        else if (data.draw) setOverlay('Ничья', 'show', 1000);
+        restartBtn.style.display = 'inline-block';
+        break;
     case 'wait':
       setOverlay('Ожидаем соперника...', 'show');
       break;
@@ -207,7 +208,12 @@ socket.addEventListener('message', e => {
     case 'error':
       alert('Ошибка: ' + data.msg);
       break;
-    case 'info':
+      case 'restartPending':
+        setOverlay('Ожидаем подтверждения соперника…', 'show');
+        break;
+      case 'restartRequested':
+        setOverlay('Соперник предлагает сыграть ещё раз', 'show', 1000);
+        break;
       console.log(data.msg);
       setOverlay(data.msg, 'show', 1000);
       break;
