@@ -28,7 +28,8 @@ const roomListUl = document.getElementById('room-list');   // элемент с�
 const gameDiv    = document.getElementById('game');        // игровое поле
 
 // ---------- WebSocket‑соединение ----------
-const socket = new WebSocket(`ws://${location.host}`);
+const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
+const socket = new WebSocket(`${protocol}://${location.host}`);
 socket.addEventListener('close', () => {
   // соединение закрыто (например, после выхода из комнаты)
   roomId = null;
