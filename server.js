@@ -87,6 +87,8 @@ function handlePlayerLeave(ws) {
   if (!room) return;
 
   room.players.delete(ws);
+  // Очищаем голос рестарта, если игрок выходил
+  if (room.restartVotes) room.restartVotes.clear();
   if (ws.roomHandler) ws.off('message', ws.roomHandler);
 
   const oldId = ws.roomId;
@@ -133,7 +135,7 @@ function attachRoomHandlers(ws, roomId, password) {
 // Если такой комнаты ещё нет, создаём новую.
   let room = rooms.get(roomId);
   if (!room) {
-    room = { board:Array(9).fill(''), turn:'X', players:new Set(), password: password || null };
+    room = { board:Array(9).fill(''), turn:'X', players:new Set(), password: password || null, restartVotes: new Set() };
     rooms.set(roomId, room);
   }
   // Если для комнаты установлен пароль, проверяем, что клиент указал правильный пароль.
@@ -181,36 +183,53 @@ function attachRoomHandlers(ws, roomId, password) {
       if (typeof idx !== 'number' || idx < 0 || idx > 8) return;
       if (room.board[idx]) return;
       room.board[idx] = ws.symbol;
-      if (checkWin(room.board, ws.symbol)) {
-        broadcast(room, { type:'end', board:room.board, winner:ws.symbol });
-        resetRoom(room);
-        broadcastRoomList();
-        return;
-      }
-      if (room.board.every(c=>c)) {
-        broadcast(room, { type:'end', board:room.board, draw:true });
-        resetRoom(room);
-        broadcastRoomList();
-        return;
-      }
+        if (checkWin(room.board, ws.symbol)) {
+          broadcast(room, { type:'end', board:room.board, winner:ws.symbol });
+          // Очищаем голоса рестарта при завершении партии
+          room.restartVotes.clear();
+          resetRoom(room);
+          broadcastRoomList();
+          return;
+        }
+        if (room.board.every(c=>c)) {
+          broadcast(room, { type:'end', board:room.board, draw:true });
+          // Очищаем голоса рестарта при завершении партии
+          room.restartVotes.clear();
+          resetRoom(room);
+          broadcastRoomList();
+          return;
+        }
       room.turn = room.turn === 'X' ? 'O' : 'X';
       broadcast(room, { type:'state', board:room.board, turn:room.turn });
     }
-    // Перезапуск партии.
-// Поле очищается, а символы X и O заново распределяются случайным образом.
+    // Перезапуск партии – требуется подтверждение обоих игроков.
     if (data.type === 'restart') {
-      resetRoom(room);
-      const arr = Array.from(room.players);
-      if (arr.length === 2) {
-        const [first, second] = arr;
-        const assignXtoFirst = Math.random() < 0.5;
-        first.symbol = assignXtoFirst ? 'X' : 'O';
-        second.symbol = assignXtoFirst ? 'O' : 'X';
-        first.send(JSON.stringify({ type:'joined', roomId, symbol:first.symbol }));
-        second.send(JSON.stringify({ type:'joined', roomId, symbol:second.symbol }));
-        
+      // Запоминаем голос текущего игрока.
+      room.restartVotes.add(ws);
+      if (room.restartVotes.size === 1) {
+        // Первый игрок запросил рестарт.
+        ws.send(JSON.stringify({ type:'restartPending' }));
+        // Уведомляем второго игрока, что соперник запросил рестарт.
+        const other = Array.from(room.players).find(p => p !== ws);
+        if (other) other.send(JSON.stringify({ type:'restartRequested' }));
+      } else if (room.restartVotes.size >= 2) {
+        // Оба игрока согласились – сбрасываем состояние.
+        room.restartVotes.clear();
+        resetRoom(room);
+        // Снова распределяем символы случайно.
+        const arr = Array.from(room.players);
+        if (arr.length === 2) {
+          const [first, second] = arr;
+          const assignXtoFirst = Math.random() < 0.5;
+          first.symbol = assignXtoFirst ? 'X' : 'O';
+          second.symbol = assignXtoFirst ? 'O' : 'X';
+          // Отправляем обновлённые данные о присоединении.
+          first.send(JSON.stringify({ type:'joined', roomId, symbol:first.symbol }));
+          second.send(JSON.stringify({ type:'joined', roomId, symbol:second.symbol }));
+        }
+        // Отсылаем новое состояние доски.
+        broadcast(room, { type:'state', board:room.board, turn:room.turn });
       }
-      broadcast(room, { type:'state', board:room.board, turn:room.turn });
     }
     // Игрок покидает комнату.
 // WebSocket‑соединение не закрывается, чтобы клиент мог сразу создать новую комнату или присоединиться к другой.
