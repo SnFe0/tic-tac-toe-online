@@ -3,8 +3,12 @@ const cells = document.querySelectorAll('.cell');
 const resultOverlay = document.getElementById('result-overlay');
 
 // ---------- Управление оверлеем ----------
-function setOverlay(text, mode = 'show', timeout = null) {
-  resultOverlay.innerHTML = `<h2>${text}</h2>`;
+function setOverlay(text, mode = 'show', timeout = null, showCancel = false) {
+  let html = `<h2>${text}</h2>`;
+  if (showCancel) {
+    html += `<button id="overlayCancelBtn" class="neon-btn">Отмена</button>`;
+  }
+  resultOverlay.innerHTML = html;
   resultOverlay.classList.remove('show', 'hidden');
   // принудительный рефлоу для перезапуска перехода
   void resultOverlay.offsetWidth;
@@ -16,6 +20,24 @@ function setOverlay(text, mode = 'show', timeout = null) {
     }, timeout);
   }
 }
+
+// Обработчик клика по кнопке "Отмена" в оверлее
+resultOverlay.addEventListener('click', function(e) {
+  if (e.target.id === 'overlayCancelBtn') {
+    socket.send(JSON.stringify({ type: 'leave', roomId }));
+    // Скрываем оверлей и сбрасываем состояние
+    resultOverlay.classList.remove('show');
+    resultOverlay.classList.add('hidden');
+    resultOverlay.innerHTML = '';
+    roomId = null;
+    mySymbol = null;
+    board = Array(9).fill('');
+    gameActive = false;
+    hasJoined = false;
+    showLobby();
+    socket.send(JSON.stringify({ type: 'roomList' }));
+  }
+});
 
 // ---------- UI‑элементы ----------
 const playerInfo = document.getElementById('player-info'); // инфо о текущем игроке
@@ -58,6 +80,8 @@ const winningCombinations = [
 function showLobby() {
   lobbyDiv.style.display = 'block';
   gameDiv.style.display = 'none';
+  resultOverlay.classList.remove('show');
+  resultOverlay.classList.add('hidden');
   restartBtn.style.display = 'none';
   leaveBtn.style.display = 'none';
   playerInfo.textContent = '';
@@ -190,7 +214,7 @@ socket.addEventListener('message', e => {
         restartBtn.style.display = 'inline-block';
         break;
     case 'wait':
-      setOverlay('Ожидаем соперника...', 'show');
+      setOverlay('Ожидаем соперника...', 'show', null, true);
       break;
     case 'opponentLeft':
       board = Array(9).fill('');
@@ -198,7 +222,7 @@ socket.addEventListener('message', e => {
       gameActive = false;
       setOverlay('Соперник вышел', 'show', 1200);
       setTimeout(() => {
-        setOverlay('Ожидаем соперника...', 'show');
+        setOverlay('Ожидаем соперника...', 'show', null, true);
       }, 1200);
       turnInfo.textContent = '';
       restartBtn.style.display = 'none';
@@ -210,7 +234,7 @@ socket.addEventListener('message', e => {
       alert('Ошибка: ' + data.msg);
       break;
       case 'restartPending':
-        setOverlay('Ожидаем подтверждения соперника…', 'show');
+        setOverlay('Ожидаем подтверждения соперника…', 'show', null, true);
         break;
       case 'restartRequested':
         setOverlay('Соперник предлагает сыграть ещё раз', 'show', 1000);
